@@ -20,12 +20,11 @@ Python을 통해 데이터에 대한 이해와 간단한 데이터 처리 후,�
 |------|--------------------------------------------------|
 | 1  | [데이터 로드](#1)                                  |
 | 2  | [데이터 확인 및 처리](#2)                         |
-| 3  | [태블로 연결결](#3)                         |
-| 4  | [데이터 전처리](#4)                            |
-| 5  | [회귀 분석](#5)                                |
-| 6  | [모델 평가](#6)                                |
-| 7  | [예측](#7)                                     |
-| 8  | [구글 스튜디오](#8)                            |
+| 3  | [태블로 연결](#3)                         |
+| 4  | [태블로 설정](#4)                            |
+| 5  | [태블로 시각화](#5)                                |
+| 6  | [도구 설명 편집](#6)                                |
+| 7  | [대시 보드](#7)                                     |
 
 
 
@@ -215,32 +214,38 @@ df.to_excel('london_bikes_final.xlsx', sheet_name='Data')
 
 </div>
 
-3.태블로 연결
+<div id="3">
+
+# 3.태블로 연결
 
 태블로 퍼블릭에 london_bikes_final.csv 파일을 연결합니다
 
 ![Tableau](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/cd94718a-dea6-4af1-992d-80f1dc3f618f)
 
-3.1 매개변수 생성
+</div>
+
+<div id="4">
+
+# 4.태블로 설정
+
+### 4.1 매개변수 생성
 
 그리고 시트1을 선택 후 매개 변수(Moving Everage Period, Moving Everage Duration) 생성합니다.
 
 ![Tableau](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/b064ce99-a4a3-44b3-baf8-860522847b86)
 
-3.2 계산 필드 작성
+### 4.2 계산 필드 작성
 
 ![Tableau_2](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/cd720394-be1f-4aea-a4ac-65ca9824a383)
 
-3.3 행,열 드롭
+### 4.3 행,열 드롭
 
 열 필드 : Moving Average Period
 행 : Count
 
 ![Tableau_3](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/abc90395-7aa5-41df-8d13-c0b28a5f9c9c)
 
-3.4 Min, Max Month 최대 최소 월 계산 필드
-
-![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/8cc686c4-4a59-4c26-8085-fab6c70a9b54)
+### 4.4 Min, Max Month 최대 최소 월 계산 필드
 
 * Min 계산 필드{ MIN(IF [Moving Average Period 집합] THEN [Moving Average Period] END) }
 * Max 계산 필드{ MAX(IF [Moving Average Period 집합] THEN [Moving Average Period] END) }
@@ -249,13 +254,13 @@ df.to_excel('london_bikes_final.xlsx', sheet_name='Data')
 
 Update Moving Average Period Set
 
-3.5 Action(액션) 데이터 셋 추가
+### 4.5 Action(액션) 데이터 셋 추가
 
 상단 워크시트 > 동작 > 동작 추가 > 집합 값 변경 > 대상 집합(DaTa(Lodon_bike_final) > 선택을 해제할 경우의 결과 > 집합 값 유지 > 생
 
 Update Moving Average Period Set
 
-3.6 참조 구간 설정(Min, Max)
+### 4.6 참조 구간 설정(Min, Max)
 
 왼쪽 상단 > 분석 > 참조 구간을 시트에 드래그 > 설정 
 
@@ -263,27 +268,226 @@ Update Moving Average Period Set
 
 ![Tableau_4](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/22df8460-0ddf-486a-831f-fc3d7a3de8fe)
 
+### 4.7 범위 (In Range) 계산 필드
 
+필드 이름 : In Range
+```
+[Moving Average Period] >= [Min Month]
+AND
+[Moving Average Period] <= [Max Month]
+```
 
-<div id="3">
+범위 계산 필드를 색상에 드롭
 
-</div>
+![Tableau_5](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/8410a9f4-40b7-45dc-bd4a-93774d31ec92)
 
-<div id="4">
+### 4.8 이동 평균(Moving Average Rides) 계산 필드
+
+필드 이름 : Moving Average Rides
+```
+WINDOW_AVG(SUM([Count]), -[Moving Average Duration]+1, 0)
+```
+
+기존에 생성한 매개 변수를 기반으로 필드 작성 후 원하는 범위를 적용하여 업데이트 합니다.
+
+![Tableau_6](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/d5050709-32a1-49ad-a343-a78bbfe8b834)
+
+### 4.9 범위 합산 필드
+
+필드 이름 : In Range Rides
+```
+{ SUM(INT(In [In Range] * [Count])) }
+```
+
+### 4.10 
+
+* 필터: In Range > True
+* 마크 > 세부정보: Min Month, Max Month
+* 마크 > 텍스트: Moving Average Rides
+텍스트 편집
+```
+London Bikes Rides
+between <Min Month> and <Max Month>
+```
+
+OutPut
+
+![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/1899e263-196b-43ba-a01d-c5a61d9340ca)
 
 </div>
 
 <div id="5">
 
+# 5 태블로 시각화
+
+## 5.1 히트맵
+
+* temp real C > 만들기 > 구간 차원 > 필드명:기간 C
+* wind speed kph > 만들기 > 구간 차원 > 필드명:바람 kph
+
+* 행: 기간 C
+* 열: 바람 kph
+* 필터 ==> In Range(True)
+* 색상 ==> Count(사각형)
+* 레이블 ==> Count
+
+OutPut
+
+![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/feb72f52-8589-4b2a-8a3c-e2590c2d00bc)
+
+## 5.2 날씨
+
+* 행: 합계(Count)
+* 열: Weather
+* 필터 ==> In Range(True)
+* 색상 ==> Weather(bar)
+* 세부정보 ==> Min Month, Max Month
+* 레이블 ==> 합계(Count)
+
+OutPut
+
+![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/8c0962c8-21dc-4595-92fd-7c9a60f68f6d)
+
+
+## 5.3 시간
+
+* 행: 합계(Count)
+* 열: 시간(Time)
+* 필터 ==> In Range(True)
+* 색상 ==> 시간(Time)
+* 세부정보 ==> Min Month, Max Month
+* 레이블 ==> 합계(Count)
+
+OutPut
+
+![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/785c75ac-1fee-4a6d-a6c1-0e83d1599737)
+
+
+
+## 5.4 시각화 디테일
+
+### 5.4.1 이동평균 그래프
+
+* 제목:<매개 변수.Moving Average Duration> <매개 변수.Moving Average Period> moving average, 색상 초록
+* 색상: True 값(초록색),False(보라) 값 설정
+* 볼드 적용
+
+### 5.4.2 총 라이더 
+
+* 제목:London Bikes Rides between <Min Month> and <Max Month> 색상 초록
+* 폰트 사이즈: <Min Month> and <Max Month> size 10, 텍스트 사이즈 36
+* 색상: True 값(초록색),False(보라) 값 설정
+* 볼드 적용
+* 이동평균 시트 서식 복사 > 총 라이더 서식 붙여넣기
+
+### 5.4.3 히트맵
+
+* 색상 > 색상 편집 > 퍼플(단일 색상)
+* 기간 C 행, 클릭 > 서식 > 숫자 사용자 지 > 소수 자릿수 1
+* 볼드 적용
+* 이동평균 시트 서식 복사 > 히트맵 서식 붙여넣기
+
+
+### 5.4.4 날씨
+
+* 히트맵 서식 복사 > 날씨 붙여넣기
+
+* ### 5.4.5 시간
+
+* 히트맵 서식 복사 > 날씨 붙여넣기
+
 </div>
 
 <div id="6">
+
+# 6.도구 설명 편집 
+
+도구 설명은 시각화 후 그래프 내 드래그 시 나타나게 되는 정보를 말한다
+
+## 6.1 이동 평균
+
+다음과 같이 수정
+
+* 색상: 초록색
+* 볼드처리
+
+```
+**Date:	<Moving Average Period>
+Moving Average Rides:	<집계(Moving Average Rides)>**
+
+<Sheet name="날씨" maxwidth="300" maxheight="200" filter="<모든 필드>">
+<Sheet name="시간" maxwidth="300" maxheight="400" filter="<모든 필드>">
+```
+
+OutPut
+
+![Tableau_7](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/5ae751d9-00a6-495e-aca8-ae2c595166f1)
+
+## 6.2 총 라이더, 날씨, 시간
+
+* 도구 설명 값 모두 제거
+* 레이블(텍스트) 볼드
+
+
+## 6.3 히트맵
+
+* 색상: 초록색
+* 볼드처리
+
+```
+**Min Month:	<Min Month>
+Max Month:	<Max Month>**
+
+<Sheet name="날씨" maxwidth="300" maxheight="200" filter="<모든 필드>">
+<Sheet name="시간" maxwidth="300" maxheight="400" filter="<모든 필드>">
+```
+
+OutPut
+
+![image](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/d15771fa-b822-4915-bce8-bfd9e11630e1)
 
 </div>
 
 <div id="7">
 
+# 7.대시보드
+
+하단의 '새 대시 보드' 생성
+
+크기 > 고정된 크기 > 일반 데스크톱(1366 x 768)
+
+### 1. '총 라이더' 드롭
+### 2. 이동 평균 우측 드롭
+* 제목 설정
+```
+<매개 변수.Moving Average Duration> <매개 변수.Moving Average Period> moving average
+```
+* Moving Average Period, Moving Average Duration 설정 부동
+* 제목, 본문 글꼴 색상 초록색, 볼드처리
+* 대시보드 >> 개체 >> 텍스트 >> "drag and hold to selecttime period on timeline" 생성
+* '이동 평균' 시트 이동 >> 'Moving Average Period ==> 필터
+* '대시 보드' 시트 이동 >> '이동 평균' 그래프 드롭다운 >> 필터 >> 'Moving Average Period 생성
+### 3. 히트맵 하단 드롭
+* 제목 설정
+* 색상 초록색, 크기 설정
+```
+온도 vs 풍속 between <Min Month> and <Max Month>
+```
+### 4. 대시 보드 >> 동작 >> 'Update Moving Average Period Set' 
+* 원본 시트: 대시보드
+* 이동평균 체크
+
+
+OutPut
+
+![Tableau_8](https://github.com/plintAn/Tebleau_LondonBike/assets/124107186/367571ed-3e2f-4b46-a445-3daec6dce75d)
+
+
 </div>
+
+
+
 
 <div id="8">
 
+</div>
